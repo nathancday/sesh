@@ -1,24 +1,3 @@
----
-title: "start sesh-ing"
-author: "Nathan Day"
-date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Vignette Title}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
----
-
-```{r setup, include = FALSE}
-knitr::opts_chunk$set(
-    message = F,
-    warning = F,
-  collapse = TRUE,
-  comment = "#",
-  options(repos="https://cran.rstudio.com" )
-)
-```
-
 ## sesh
 
 Is a light-weigth package manager for R. It sits somewhere between `reprex` and `packrat` and revolves around `CSV` files to save key package information.
@@ -28,13 +7,13 @@ devtools::load_all("~/future/sesh/")
 # devtools::install_github("nathancday/sesh")
 ```
 
-## Purpose
+#### Purpose
 
 The idea behind `sesh` is being able to share specific package version info with others, including your future self.
 
 Installing and loading `forcats` and `tibble` from their current CRAN versions. To attach some packages beyond R-core.
 
-```{r load_examples}
+```
 install.packages("forcats", dep = T)
 install.packages("tibble")
 
@@ -54,7 +33,7 @@ This is the essense of `sesh`.
 
 And while this strategy doesn't cover every NAMESPACE'd load in, it does cover the major pacakge changes that are the typical causes of script breaking. It makes sharing your current pacakge load out easy, which is useful for asking version specific code problems, on a forum or mailing list.
 
-## Use case
+#### Use case
 
 Let's save the current `sesh()` as a CSV. The argument `path` used the `glue` package to paste together R variables, so gloabl variables can be used in the file name.
 
@@ -62,9 +41,9 @@ Let's save the current `sesh()` as a CSV. The argument `path` used the `glue` pa
 save_sesh()
 ```
 
-Now just to show usage, let's re-check the `sesh` we just saved.
+Now, let's re-check the `sesh` we just saved.
 
-```{r check_easy, message = T}
+```
 check_sesh("sesh_2018-08-12.csv") # check against currently installed versions
 ```
 
@@ -76,7 +55,7 @@ Pretend you are picking up a script that you wrote last year. Scary for sure, bu
 
 Here are two common cases: a prior CRAN release version and a package from GitHub at a specific commit.
 
-```{r mess_up, message = F}
+```
 devtools::install_version("forcats", "0.2.0")
 devtools::install_github("tidyverse/tibble@74b66ffcfca4459db52b6e9991d51aba93759dd6")
 ```
@@ -85,7 +64,7 @@ If you run into problems you might need to restart your R session here.
 
 Now re-check our previous session
 
-```{r re-check, message = T}
+```
 check_sesh("sesh_2018-08-12.csv")
 ```
 
@@ -93,8 +72,6 @@ That's cool, `sesh::check_sesh()` shows us the difference between our currently 
 
 The function `install_sesh()` will restore matching versions. By looking at `source` and `sesh_v`, it will try to re-install the appropriate version from either CRAN archives or GitHub and let you know if it was succesful.
 
-```{r install}
+```
 install_sesh("sesh_2018-08-12.csv")
 ```
-
-Great, now you have the the right package versions installed to reproduce your "old" script. Package problems resolved!

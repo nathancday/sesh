@@ -1,27 +1,30 @@
-#' A function to save session as csv.
+
+#' Attached packages and their versions
+#'
+#' A light-weight `devtools::session_info()`.
+#' @return A data frame.
+#' @importFrom magrittr "%>%"
+#' @export
+sesh <- function() {
+    devtools::session_info()$packages %>%
+        dplyr::filter(`*` == "*", (!grepl("local", source) | package == "base")) %>%
+        dplyr::select(package, sesh_v = version, source)
+}
+
+#' Save `sesh` output as csv.
 #'
 #' Works via `devtools::session_info()`.
 #'
 #' @return Saves a CSV with essential information about loaded packages.
+#' @importFrom magrittr "%>%"
 #' @examples
 #' save_sesh()
 #' @export
-save_sesh <- function(path = 'sesh_{date}.csv') {
-    sesh <- devtools::session_info()
+save_sesh <- function(path = 'sesh_{as.character(Sys.Date())}.csv') {
 
-    plat <- unlist(sesh$platform)
-    packs <- sesh$packages
-
-    date <- as.character(Sys.Date())
-    # r_version <- gsub("R version (.*) .*", "\\1", plat[[1]])
-    # os <- gsub(".*, ", "", plat[["system"]])
-    # file_name <- glue::glue('sesh_{plat[["date"]]}_{r_version}_{os}.csv')
     file_name <- glue::glue(path)
 
-    # filter to only loaded ("*") packs and ignore local ("baseR") packages
-    packs %>%
-        dplyr::filter(`*` == "*", (!grepl("local", source) | package == "base")) %>%
-        dplyr::select(-date, sesh_v = version) %>%
+    sesh() %>%
         readr::write_csv(file_name)
 
     message(glue::glue('Saved sesh as: {file_name}'))
@@ -32,6 +35,7 @@ save_sesh <- function(path = 'sesh_{date}.csv') {
 #'
 #' Gives a table from
 #'
+#' @importFrom magrittr "%>%"
 #' @export
 read_sesh <- function(path) {
     read <- suppressMessages(readr::read_csv(path))
@@ -48,6 +52,7 @@ read_sesh <- function(path) {
 #' those specified in sesh.
 #'
 #' @md
+#' @importFrom magrittr "%>%"
 #' @param path A character. Valid path to a sesh CSV.
 #' @export
 check_sesh <- function(path) {
@@ -72,9 +77,8 @@ check_sesh <- function(path) {
         dplyr::filter(sesh_v != cur_v)
 
     if (nrow(diff_versions) > 0) {
-        message("Current versions mismatched.")
+        message("Current versions mismatched.\nUse `install_sesh()` to install mismatched versions.")
         return(diff_versions)
-        message("\nUse `install_sesh()` to install mismatched versions.")
         }
     else {
         message("Current versions match sesh.")
@@ -84,6 +88,8 @@ check_sesh <- function(path) {
 }
 
 #' Function to load out a sesh if required versions are installed.
+#'
+#' @importFrom magrittr "%>%"
 #' @export
 load_sesh <- function(path) {
 
@@ -109,6 +115,7 @@ load_sesh <- function(path) {
 #'@param auth_token A character. Passed to `devtools::install_github()` for accessing
 #'private repos.
 #'@param ... Arguments passed to `devtools::install()`.
+#'@importFrom magrittr "%>%"
 #'@export
 install_sesh <- function(path,
                          auth_token = devtools::github_pat(quiet),
@@ -171,7 +178,8 @@ install_sesh <- function(path,
     paste0(paste(capture.output(print(x)), collapse = "\n"), "\n")
 }
 
-# a hidden function to parse return from 'safely()'
+#' a hidden function to parse return from 'safely()'
+#' @importFrom magrittr "%>%"
 .extract_result <- . %>%
     purrr::map(., purrr::possibly(~ ifelse(is.null(.[["result"]]),
                                            "Error",

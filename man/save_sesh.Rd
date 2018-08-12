@@ -2,9 +2,9 @@
 % Please edit documentation in R/sesh.R
 \name{save_sesh}
 \alias{save_sesh}
-\title{A function to save session as csv.}
+\title{Save `sesh` output as csv.}
 \usage{
-save_sesh(path = "sesh_{date}.csv")
+save_sesh(path = "sesh_{as.character(Sys.Date())}.csv")
 }
 \value{
 Saves a CSV with essential information about loaded packages.
