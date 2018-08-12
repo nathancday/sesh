@@ -1,0 +1,4 @@
+package,*,source,version
+base,*,local,1e3
+bindrcpp,*,CRAN (R 3.5.0),1e3
+testthat,*,CRAN (R 3.5.0),1e3

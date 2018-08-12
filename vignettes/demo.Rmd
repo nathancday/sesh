@@ -1,0 +1,93 @@
+---
+title: "Demo"
+author: "Nathan Day"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+    message = F,
+    warning = F,
+  collapse = TRUE,
+  comment = "#",
+  options(repos="https://cran.rstudio.com" )
+)
+```
+
+## sesh
+
+Is a light-weigth package manager for R. It sits somewhere between `reprex` and `packrat` and revolves around `CSV` files to save key package information.
+
+```{r install}
+library(devtools)
+devtools::load_all("~/future/sesh/")
+# devtools::install_github("nathancday/sesh")
+```
+
+The idea behind `sesh` is being able to share specific package version info with others, including your future self.
+
+## Purpose
+
+```{r}
+install.packages("forcats", dep = T)
+install.packages("tibble")
+
+library(forcats) # example
+library(tibble) # example
+```
+
+`session_info()` is an improvement on `sessionInfo()` for sure, but is still fairly verbose.
+
+```{r}
+session_info()
+```
+
+`sesh` aims to filter this output to only essential elements, the attached packages (their versions) and the `R-core` version.
+
+```{r}
+library(dplyr)
+
+session_info()$packages %>%
+    filter(`*` == "*", (!grepl("local", source) | package == "base"))
+```
+
+This data frame is the essense of `sesh`.
+
+## Use case
+
+```{r}
+save_sesh()
+
+check_sesh("sesh_2018-08-12.csv") # check against currently installed versions
+```
+
+#### Simulated time-travel
+
+Let's mess it up a little bit to show the point.
+
+Pretend you are picking up a script that you wrote last year. Scary for sure, but a little less scary, when you let `sesh` take care of the package dependencies.
+
+```{r mess_up}
+install_version("forcats", "0.2.0")
+install_github("tidyverse/tibble@74b66ffcfca4459db52b6e9991d51aba93759dd6")
+```
+
+
+If you run into problems you might need to restart your R session here. You know, for precautionary porpoises.
+
+```{r}
+check_sesh("sesh_2018-08-12.csv")
+```
+
+That's cool, `sesh::check_sesh()` shows us the difference between our currently installed packages and the "past" session we are trying to get back to.
+
+```{r}
+install_sesh("sesh_2018-08-12.csv")
+```
+
+Great, now you have the the right package versions installed reproduce your year old script. Package problems be gone!

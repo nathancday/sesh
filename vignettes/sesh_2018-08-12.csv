@@ -1,0 +1,7 @@
+package,*,sesh_v,source
+base,*,3.5.0,local
+bindrcpp,*,0.2.2,CRAN (R 3.5.0)
+devtools,*,1.13.5,CRAN (R 3.5.0)
+dplyr,*,0.7.6,cran (@0.7.6)
+forcats,*,0.3.0,CRAN (R 3.5.0)
+tibble,*,1.4.2,CRAN (R 3.5.0)
