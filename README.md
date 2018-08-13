@@ -1,24 +1,23 @@
 ## sesh
 
-Is a light-weigth package manager for R. It sits somewhere between `reprex` and `packrat` and revolves around `CSV` files to save key package information.
+Is a light-weigth package manager for R, built on top of [`devtools`](https://github.com/r-lib/devtools). It sits somewhere between `reprex` and `packrat` and revolves around `CSV` files to save key package information.
 
 ```{r load_sesh}
-devtools::load_all("~/future/sesh/")
-# devtools::install_github("nathancday/sesh")
+devtools::install_github("nathancday/sesh")
 ```
 
 #### Purpose
 
-The idea behind `sesh` is being able to share specific package version info with others, including your future self.
+The goal of `sesh` is to share essential package version info with others, including your future self.
 
-Installing and loading `forcats` and `tibble` from their current CRAN versions. To attach some packages beyond R-core.
+To show it off let's attach some packages beyond R-core. Here I am installing and loading `forcats` and `tibble` from their current CRAN versions, 
 
 ```
-install.packages("forcats", dep = T)
+install.packages("forcats")
 install.packages("tibble")
 
-library(forcats) # example
-library(tibble) # example
+library(forcats)
+library(tibble)
 ```
 
 `session_info()` is an improvement on `sessionInfo()` for sure, but is still fairly verbose.
@@ -35,7 +34,9 @@ And while this strategy doesn't cover every NAMESPACE'd load in, it does cover t
 
 #### Use case
 
-Let's save the current `sesh()` as a CSV. The argument `path` used the `glue` package to paste together R variables, so gloabl variables can be used in the file name.
+To save the current `sesh()` as a CSV, there is `save_sesh()`
+
+The only argument `path` uses the [`glue` package](https://github.com/tidyverse/glue) to paste together R variables, so you can use gloabl variables in the file name. The default path is 'sesh_{as.character(Sys.Date)}.csv'.
 
 ```{r save_easy, message = T}
 save_sesh()
