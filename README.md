@@ -69,9 +69,9 @@ Now re-check our previous session
 check_sesh("sesh_2018-08-12.csv")
 ```
 
-That's cool, `sesh::check_sesh()` shows us the difference between our currently installed packages, `cur_v` and the "past" session version we are trying to get back to, `sesh_v`.
+So `sesh::check_sesh()` shows us the difference between our currently installed packages, `cur_v` and the "past" session version we are trying to get back to, `sesh_v`.
 
-The function `install_sesh()` will restore matching versions. By looking at `source` and `sesh_v`, it will try to re-install the appropriate version from either CRAN archives or GitHub and let you know if it was succesful.
+The function `install_sesh()` will restore matching versions, in a new `sesh` folder that resides in `~/.Trash`. By looking at `source` and `sesh_v`, it will try to re-install the appropriate version from either CRAN archives or GitHub and let you know if it was succesful.
 
 ```
 install_sesh("sesh_2018-08-12.csv")

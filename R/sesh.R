@@ -123,6 +123,15 @@ install_sesh <- function(path,
 
     sesh <- suppressWarnings(check_sesh(path))
 
+    # make the throwaway install for sesh
+    file_name <- glue::glue('~/.Trashsesh_{as.character(Sys.Date())}/')
+    mkdir(file_name)
+    message(glue::glue('Installing sesh in: {file_name}'))
+
+
+
+    mkdir("~/.Trash/sesh")
+
     # drop already loaded packages if versions match
     needed <- sesh %>%
         # dplyr::mutate(cur_v = purrr::map_chr(package, .check_installed)) %>%

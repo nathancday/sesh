@@ -32,49 +32,59 @@ devtools::load_all("~/future/sesh/")
 
 The idea behind `sesh` is being able to share specific package version info with others, including your future self.
 
-Installing and loading `forcats` and `tibble` from their current CRAN versions. To attach some packages beyond R-core.
+## Demo
+
+We start by installoading `forcats` and `tibble` from their current CRAN versions, just so we have some packages beyond R-core.
 
 ```{r load_examples}
-install.packages("forcats", dep = T)
+install.packages("forcats")
 install.packages("tibble")
 
-library(forcats) # example
-library(tibble) # example
+library(forcats)
+library(tibble)
 ```
 
-`session_info()` is an improvement on `sessionInfo()` for sure, but is still fairly verbose.
+#### Saving critial packages for your script
 
-`sesh` aims to filter this output to only essential elements, the attached packages (with their versions) and the `R-core` version.
+`session_info()` is an improvement on `sessionInfo()` for readability, but is still fairly verbose.
+
+`sesh` aims to filter this output to only the attached packages. It also captures information about the current `R-core` version
 
 ```{r sesh}
 sesh()
 ```
 
-This is the essense of `sesh`.
+This dataframe is the essense of `sesh`, a light-weight, easy to share version of your session's info.
 
-And while this strategy doesn't cover every NAMESPACE'd load in, it does cover the major pacakge changes that are the typical causes of script breaking. It makes sharing your current pacakge load out easy, which is useful for asking version specific code problems, on a forum or mailing list.
+While this strategy doesn't cover every NAMESPACE'd load-in, it does cover the major pacakge changes that are the common causes of script breaking.
 
-## Use case
+#### Saving a sesh
 
-Let's save the current `sesh()` as a CSV. The argument `path` used the `glue` package to paste together R variables, so gloabl variables can be used in the file name.
+To save your current `sesh()` as a CSV use `save_sesh()`.
 
 ```{r save_easy, message = T}
 save_sesh()
 ```
 
-Now just to show usage, let's re-check the `sesh` we just saved.
+The argument `path` uses the `glue` package to paste together R variables, so you can include gloabl variables if properly formatted.
+
+#### Check an old sesh
+
+Now just to show usage, let's re-check the `sesh` we just saved. The function `check_sesh()` with compare your currently installed package versions with a `sesh.csv` specified by the argument `path`.
 
 ```{r check_easy, message = T}
-check_sesh("sesh_2018-08-12.csv") # check against currently installed versions
+check_sesh("sesh_2018-08-16.csv") # check against currently installed versions
 ```
+
+This just confirms our current session info matches the session info we saved two seconds ago, duh.
 
 #### Simulated time-travel
 
-Let's mess it up a little bit to show the point.
+Let's pretend we are visiting a past script we wrote. So let's install older versions just to mess it up a little and simulate time-travel.
 
 Pretend you are picking up a script that you wrote last year. Scary for sure, but a little less scary, when you let `sesh` take care of the package dependencies.
 
-Here are two common cases: a prior CRAN release version and a package from GitHub at a specific commit.
+Here are two common cases: a prior CRAN release version and a package from GitHub at prior commit.
 
 ```{r mess_up, message = F}
 devtools::install_version("forcats", "0.2.0")
