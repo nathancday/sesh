@@ -28,6 +28,8 @@ save_sesh <- function(path = 'sesh_{as.character(Sys.Date())}.csv') {
         dplyr::rename(v = version, s = source) %>%
         readr::write_csv(file_name)
 
+
+
     message(glue::glue('Saved sesh as: {file_name}'))
 }
 
@@ -66,8 +68,16 @@ check_sesh <- function(path) {
 
     suppressMessages(
         require_action <- dplyr::full_join(past, cur) %>%
-        dplyr::filter( (v != version | is.na(version) ) & is.na(sesh_lib) )
+            dplyr::filter( v != version | is.na(version) )
     )
+
+    if ( !"sesh_lib" %in% names(require_action) ) {
+        require_action <- require_action %>%
+            dplyr::mutate(sesh_lib = NA)
+    }
+    require_action <- require_action %>%
+        dplyr::filter(is.na(sesh_lib))
+
     # these pacakges fall into two catergories (installed but not loaded and wrong version installed)
 
     if (nrow(require_action) == 0 ) {

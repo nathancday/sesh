@@ -138,3 +138,18 @@ And re-checking we see...
 check_sesh("sesh_2018-08-18.csv")
 ```
 
+### Going back
+
+When you are done working with the pacakge version from the past `sesh` you can go back to your global version like this.
+
+In this demo the global versions right now are the back in time version forcats-v0.2.0 and stringr@bf48d9d.
+
+```{r}
+unload_sesh("sesh_2018-08-18.csv")
+
+library(forcats)
+library(stringr)
+
+sesh()
+```
+
