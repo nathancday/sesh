@@ -2,18 +2,17 @@
 % Please edit documentation in R/sesh.R
 \name{install_sesh}
 \alias{install_sesh}
-\title{A function to install specific package versions.}
+\title{A function to install specific package versions in a temporary library.}
 \usage{
-install_sesh(path, auth_token = devtools::github_pat(quiet), ...)
+install_sesh(path, ...)
 }
 \arguments{
-\item{path}{A character. Valid file path to a \code{save_sesh()} output CSV.}
-
-\item{auth_token}{A character. Passed to \code{devtools::install_github()} for accessing
+\item{path}{A character. Valid file path to a \code{save_sesh()} output CSV.
 private repos.}
 
 \item{...}{Arguments passed to \code{devtools::install()}.}
 }
 \description{
-Works for packages installed from CRAN and GitHub.
+Works for packages installed from CRAN and GitHub. Assumes any GitHub PAT is
+in \code{envar GITHUB_PAT}, per \code{devtools}.
 }

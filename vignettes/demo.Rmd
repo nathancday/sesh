@@ -24,7 +24,6 @@ knitr::opts_chunk$set(
 Is a light-weigth package manager for R. It sits somewhere between `reprex` and `packrat` and revolves around `CSV` files to save key package information.
 
 ```{r load_sesh}
-devtools::load_all("~/future/sesh/")
 # devtools::install_github("nathancday/sesh")
 ```
 
@@ -41,7 +40,8 @@ install.packages("forcats")
 install.packages("tibble")
 
 library(forcats)
-library(tibble)
+library(stringr)
+devtools::load_all("~/future/sesh/")
 ```
 
 #### Saving critial packages for your script
@@ -73,7 +73,7 @@ The argument `path` uses the `glue` package to paste together R variables, so yo
 Now just to show usage, let's re-check the `sesh` we just saved. The function `check_sesh()` with compare your currently installed package versions with a `sesh.csv` specified by the argument `path`.
 
 ```{r check_easy, message = T}
-check_sesh("sesh_2018-08-16.csv") # check against currently installed versions
+check_sesh("sesh_2018-08-18.csv") # check against currently installed versions
 ```
 
 This just confirms our current session info matches the session info we saved two seconds ago, duh.
@@ -87,24 +87,54 @@ Pretend you are picking up a script that you wrote last year. Scary for sure, bu
 Here are two common cases: a prior CRAN release version and a package from GitHub at prior commit.
 
 ```{r mess_up, message = F}
-devtools::install_version("forcats", "0.2.0")
-devtools::install_github("tidyverse/tibble@74b66ffcfca4459db52b6e9991d51aba93759dd6")
+devtools::install_version("forcats", "0.2.0", reload = F)
+devtools::install_github("tidyverse/stringr@bf48d9d64a412dd67f76fc24b7d81a6a6c066105", reload = F)
 ```
 
-If you run into problems you might need to restart your R session here.
+Restart your R session here to reload the newly download version.
+
+```{r force-unload-hidden, echo=F}
+unloadNamespace("roxygen2")
+```
+
+
+```{r}
+library(forcats)
+library(stringr)
+
+sesh()
+```
+
 
 Now re-check our previous session
 
 ```{r re-check, message = T}
-check_sesh("sesh_2018-08-12.csv")
+check_sesh("sesh_2018-08-18.csv")
 ```
 
-That's cool, `sesh::check_sesh()` shows us the difference between our currently installed packages, `cur_v` and the "past" session version we are trying to get back to, `sesh_v`.
+That's cool, `sesh::check_sesh()` shows us the difference between our currently installed packages and the "past" session version.
 
-The function `install_sesh()` will restore matching versions. By looking at `source` and `sesh_v`, it will try to re-install the appropriate version from either CRAN archives or GitHub and let you know if it was succesful.
+The function `install_sesh()` will restore matching versions. By looking at the `source` and `version`, it will attempt to install the sesh version in a folder in `~/.Trash/` and let you know if it was succesful.
+
+`sesh` does not touch `.libPaths()`, so it won't intefer with you globally installed package versions. By using `~/.Trash/` as temporary library, `sesh` simply tells itself to load conflicting libraries from there.
 
 ```{r install}
-install_sesh("sesh_2018-08-12.csv")
+install_sesh("sesh_2018-08-18.csv")
 ```
 
-Great, now you have the the right package versions installed to reproduce your "old" script. Package problems resolved!
+Great, now you have the the right package versions installed to reproduce your "old" script.
+
+Right now the matching versions are not loaded, we need to call `sesh_load()` for it them to be attached.
+
+The underlying CSV file was added onto by `install_sesh()` and `load_sesh()` looks for those modifications to redirect `lib.loc` to the temporary sesh lib in `~/.Trash`.
+
+```{r}
+load_sesh("sesh_2018-08-18.csv")
+```
+
+And re-checking we see...
+
+```{r}
+check_sesh("sesh_2018-08-18.csv")
+```
+

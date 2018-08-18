@@ -1,4 +1,4 @@
-package,sesh_v,source
+package,v,s
 base,3.5.0,local
 bindrcpp,0.2.2,CRAN (R 3.5.0)
 testthat,2.0.0,CRAN (R 3.5.0)

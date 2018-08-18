@@ -10,7 +10,7 @@ save_sesh(path = "sesh_{as.character(Sys.Date())}.csv")
 Saves a CSV with essential information about loaded packages.
 }
 \description{
-Works via `devtools::session_info()`.
+Renames columns from `sesh()` to work `sesh_check()`.
 }
 \examples{
 save_sesh()
