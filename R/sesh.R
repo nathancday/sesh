@@ -8,12 +8,12 @@
 sesh <- function() {
     devtools::session_info()$packages %>%
         dplyr::filter(`*` == "*", (!grepl("local", source) | package == "base")) %>%
-        dplyr::select(package, sesh_v = version, source)
+        dplyr::select(package, version, source)
 }
 
 #' Save `sesh` output as csv.
 #'
-#' Works via `devtools::session_info()`.
+#' Renames columns from `sesh()` to work `sesh_check()`.
 #'
 #' @return Saves a CSV with essential information about loaded packages.
 #' @importFrom magrittr "%>%"
@@ -25,6 +25,7 @@ save_sesh <- function(path = 'sesh_{as.character(Sys.Date())}.csv') {
     file_name <- glue::glue(path)
 
     sesh() %>%
+        dplyr::rename(v = version, s = source) %>%
         readr::write_csv(file_name)
 
     message(glue::glue('Saved sesh as: {file_name}'))
@@ -39,9 +40,12 @@ save_sesh <- function(path = 'sesh_{as.character(Sys.Date())}.csv') {
 #' @export
 read_sesh <- function(path) {
     read <- suppressMessages(readr::read_csv(path))
+
+    # want ability to read output from 'session_info$packages %>% data.frame %>% write_csv' too
+
     if ("version" %in% names(read)) {
-        message("Assuming `version` represents `sesh_v`")
-        read <- dplyr::rename(read, sesh_v = version)
+        message("Assuming `version` represents `v`")
+        read <- dplyr::rename(read, v = version)
     }
     return(read)
 }
@@ -57,35 +61,36 @@ read_sesh <- function(path) {
 #' @export
 check_sesh <- function(path) {
 
-    sesh <- read_sesh(path)
+    past <- read_sesh(path)
+    cur <- sesh()
 
-    diff_versions <- devtools::session_info()$packages %>%
-        as.data.frame() %>%
-        dplyr::filter(`*` == "*", (!grepl("local", source) | package == "base")) %>%
-        dplyr::select(package, cur_v = version) %>%
-        dplyr::left_join(sesh, ., by = "package") %>%
-        dplyr::select(package, dplyr::matches("_v"), source) %>%
-        dplyr::filter(cur_v != sesh_v | is.na(cur_v))
+    require_action <- dplyr::full_join(past, cur) %>%
+        dplyr::filter(v != version | is.na(version))
+    # these pacakges fall into two catergories (installed but not loaded and wrong version installed)
 
-    # Look through installed packages (even if they are not loaded)
-    already_installed <- diff_versions %>%
-        dplyr::filter(is.na(cur_v)) %>%
-        dplyr::mutate(cur_v = purrr::map_chr(package, .check_installed))
+    # check that correct versions just aren't loaded
+    ready_to_load <- require_action %>%
+        dplyr::filter(is.na(version)) %>%
+        dplyr::mutate(installed_version = purrr::map_chr(package, ~ .check_installed(.))) %>%
+        dplyr::filter(v == installed_version)
 
-    diff_versions <- diff_versions %>%
-        dplyr::filter(!is.na(cur_v)) %>%
-        dplyr::bind_rows(already_installed) %>%
-        dplyr::filter(sesh_v != cur_v)
+    if (nrow(ready_to_load) > 0) {
+        message( glue::glue('These sesh-version / installed-version match:
+                           {paste(ready_to_load$package,
+                           ready_to_load$v, "/", ready_to_load$installed_version)}
+                           call load_sesh() to load them') )
+    }
 
-    if (nrow(diff_versions) > 0) {
-        message("Current versions mismatched.\nUse `install_sesh()` to install mismatched versions.")
-        return(diff_versions)
-        }
-    else {
-        message("Current versions match sesh.")
-        return(dplyr::mutate(sesh, cur_v = sesh_v) %>%
-                   dplyr::select(package, dplyr::contains("_v")))
-        }
+    # versions don't match
+    require_install <- require_action %>%
+        dplyr::filter(v != version)
+
+    if (nrow(require_install) > 0) {
+        message( glue::glue('These sesh-version / installed-version do not match:
+                           {paste(require_install$package,
+                           require_install$v, "/", require_install$version)}
+                           call install_sesh() to safely install') )
+    }
 }
 
 #' Function to load out a sesh if required versions are installed.
@@ -94,22 +99,36 @@ check_sesh <- function(path) {
 #' @export
 load_sesh <- function(path) {
 
-    sesh <- suppressMessages(check_sesh(path))
+    past <- read_sesh(path)
+    cur <- sesh()
 
-    loadable <- sesh %>%
-        filter(sesh_v == cur_v, !is.na(sesh_lib))
+    require_action <- dplyr::full_join(past, cur) %>%
+        dplyr::filter(v != version | is.na(version))
 
-    if (nrow(loadable) > 0) {
-        pacman::p_load(char = sesh$package)
+    ready_to_load <- require_action %>%
+        dplyr::filter(is.na(version)) %>%
+        dplyr::mutate(installed_version = purrr::map_chr(package, ~ .check_installed(.))) %>%
+        dplyr::filter(v == installed_version)
+
+    if (nrow(ready_to_load) > 0) {
+        pacman::p_load(char = ready_to_load$package)
     }
-    dplyr::left_join(sesh, .check_loaded(), by = c("package")) %>%
-        dplyr::select(package, sesh_v, loaded_v) %>%
-        dplyr::mutate(load_result = ifelse(sesh_v == loaded_v, "Success", "Error"))
+
+    require_action %<>%
+        dplyr::anti_join(ready_to_load)
+
+    if (nrow(require_action) > 0 ) {
+        message( glue::glue('These sesh-version / installed-version do not match:
+                           {paste(require_install$package,
+                            require_install$v, "/", require_install$version)}
+                            call install_sesh() to safely install') )
+    }
 }
 
-#' A function to install specific package versions.
+#' A function to install specific package versions in a temporary library.
 #'
-#' Works for packages installed from CRAN and GitHub.
+#' Works for packages installed from CRAN and GitHub. Assumes any GitHub PAT is
+#' in `envar GITHUB_PAT`, per `devtools`.
 #'
 #'@md
 #'@param path A character. Valid file path to a `save_sesh()` output CSV.
@@ -117,8 +136,7 @@ load_sesh <- function(path) {
 #'@param ... Arguments passed to `devtools::install()`.
 #'@importFrom magrittr "%>%"
 #'@export
-install_sesh <- function(path,
-                         auth_token = devtools::github_pat(quiet)) {
+install_sesh <- function(path, ...) {
 
     needed <- suppressWarnings(check_sesh(path))
 
@@ -131,8 +149,13 @@ install_sesh <- function(path,
 
         # make a throwaway install for sesh
         sesh_lib <- glue::glue('~/.Trash/sesh_{as.character(Sys.Date())}/')
+
+        # maybe add overwrite as argument
+        if (dir.exists(sesh_lib)) unlink(sesh_lib, recursive = TRUE)
+        # will cause loading problems if old folder exists when installs are performed
+
         dir.create(sesh_lib)
-        message(glue::glue('Installing sesh lib in: {file_name}'))
+        message(glue::glue('Installing sesh lib in: {sesh_lib}'))
 
         # Go after the repos
         # GitHub is easier
@@ -145,7 +168,7 @@ install_sesh <- function(path,
                     install_result = purrr::map(repo,
                                 purrr::safely(
                                     ~ withr:with_libpaths(sesh_lib,
-                                                          devtool::install_github(., auth_token = auth_token, ...)))))
+                                                          devtools::install_github(., auth_token = auth_token)))))
         }
 
         # CRAN is harder
@@ -154,7 +177,7 @@ install_sesh <- function(path,
         if (nrow(cran) > 0) {
             cran <- cran %>%
                 dplyr::mutate(install_result = purrr::map2(package, sesh_v,
-                                 purrr::safely(function(x, y, ...) withr::with_libpaths(sesh_lib, devtools::install_version(x, y, lib = sesh_lib)))))
+                                 purrr::safely(function(x, y, ...) withr::with_libpaths(sesh_lib, devtools::install_version(x, y)))))
         }
 
         needed <- dplyr::bind_rows(gh, cran) %>%
@@ -164,7 +187,7 @@ install_sesh <- function(path,
         repeats <- needed %>%
             dplyr::filter(install_result == "Error") %>%
             dplyr::mutate(install_result = purrr::map(package,
-                                                      purrr::safely(function(x, ...) withr::with_libpaths(sesh_lib, devtools::install_cran(x, ...)))),
+                                                      purrr::safely(function(x, ...) withr::with_libpaths(sesh_lib, devtools::install_cran(x)))),
                           install_result = .extract_result(install_result))
 
         needed <- needed %>%
@@ -205,17 +228,19 @@ install_sesh <- function(path,
                                            "Success"), NULL)) %>%
     unlist()
 
-# returns installed version
+# returns installed version for anything in .libPaths()
 .check_installed <- function(package) {
     ip <- installed.packages()
 
     if (package %in% rownames(ip)) {
-        info = ip[package == rownames(ip), ]["Version"]
+        version = ip[package == rownames(ip), "Version"] %>%
+            unique()
         # message(glue::glue('{package} v{info} installed :)'))
-        return(info)
+        return(version)
     }
     else {
-        stop(glue::glue('{package} not installed :('))
+        # message(glue::glue('{package} not installed :('))
+        return(NA_character_)
     }
 }
 

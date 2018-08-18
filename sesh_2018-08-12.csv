@@ -1,5 +1,0 @@
-package,sesh_v,source,cur_v,install_result,sesh_lib
-base,3.5.0,local,NA,NA,NA
-bindrcpp,0.2.2,CRAN (R 3.5.0),NA,NA,NA
-forcats,0.3.0,CRAN (R 3.5.0),0.2.0,Success,~/.Trash/sesh_2018-08-17/
-tibble,1.4.2,CRAN (R 3.5.0),NA,NA,NA
