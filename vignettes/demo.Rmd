@@ -1,5 +1,5 @@
 ---
-title: "start sesh-ing"
+title: "Getting started"
 author: "Nathan Day"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -11,144 +11,182 @@ vignette: >
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
-    message = F,
-    warning = F,
-  collapse = TRUE,
   comment = "#",
   options(repos="https://cran.rstudio.com" )
 )
 ```
 
-## sesh
+# sesh
 
-Is a light-weigth package manager for R. It sits somewhere between `reprex` and `packrat` and revolves around `CSV` files to save key package information.
+Is a light-weight tool for tracking R packages. It sits somewhere between `reprex` and `packrat` and revolves around `CSV` files to store key package information.
 
-```{r load_sesh}
-# devtools::install_github("nathancday/sesh")
+The main goal of `sesh`, is to make it simpler to reproduce R code. The ability to restore specific versions/commits of packages, with minimal overhead, is security for rapid development.
+
+```{r load_sesh, eval = F}
+devtools::install_github("nathancday/sesh")
 ```
 
-## Purpose
+```{r, eval = F}
+library(sesh)
+```
 
-The idea behind `sesh` is being able to share specific package version info with others, including your future self.
-
-## Demo
-
-We start by installoading `forcats` and `tibble` from their current CRAN versions, just so we have some packages beyond R-core.
-
-```{r load_examples}
-install.packages("forcats")
-install.packages("tibble")
-
-library(forcats)
-library(stringr)
+```{r, echo = F}
 devtools::load_all("~/future/sesh/")
 ```
 
-#### Saving critial packages for your script
+
+### Purpose
+
+The concept behind `sesh` is being able to record information about specific package versions for sharing with others, including your future self.
+
+Using `sesh` as part of your workflow gives you extra a little extra reprodu-security at the individual Rscript level.
+
+It is very similar in aim to `packrat`, but doesn't tie you into a RStudio Project. Instead of re-installing all of the required packages for each project, `sesh` checks against currently installed versions and builds a disposable library path for itself in `~/.Trash/` if matching versions are required.
+
+It does not touch R's deafult package search path.
+
+### Demo
+
+We start by loading `forcats` and `tibble` from their current CRAN versions, just so we have some packages beyond R-core.
+
+```{r load_examples, message = F}
+library(forcats) # v0.3.0
+library(tidyr) # v0.8.1
+```
+
+##### Saving critial packages for your script
 
 `session_info()` is an improvement on `sessionInfo()` for readability, but is still fairly verbose.
 
-`sesh` aims to filter this output to only the attached packages. It also captures information about the current `R-core` version
+`sesh` aims to filter this output to only the attached packages. It also captures information about the current `R-core` version.
 
 ```{r sesh}
 sesh()
 ```
 
-This dataframe is the essense of `sesh`, a light-weight, easy to share version of your session's info.
+This dataframe is the essense of `sesh`, a light, easy to share, record of your R session's essential information.
 
-While this strategy doesn't cover every NAMESPACE'd load-in, it does cover the major pacakge changes that are the common causes of script breaking.
+##### Saving your `sesh`
 
-#### Saving a sesh
+To save your current `sesh()`, use `save_sesh()`.
 
-To save your current `sesh()` as a CSV use `save_sesh()`.
+It will record the vital information to re-load all of your attached `pacakge@verion`s and write it to disk as a `CSV`.
 
 ```{r save_easy, message = T}
 save_sesh()
 ```
 
-The argument `path` uses the `glue` package to paste together R variables, so you can include gloabl variables if properly formatted.
+The default `path`, is set up to name the output as "sesh_$SYS-DATE.csv". But it uses the [`glue`](https://github.com/tidyverse/glue) package to paste together R variables, so you could include custom gloabls to fit your tastes.
 
-#### Check an old sesh
+##### Checking out an old `sesh`
 
-Now just to show usage, let's re-check the `sesh` we just saved. The function `check_sesh()` with compare your currently installed package versions with a `sesh.csv` specified by the argument `path`.
+Just to show off the tools, let's re-check the `CSV` we just saved for our current `sesh`.
+
+The function `check_sesh()` will compare the currently loaded/installed package versions against a `sesh` record. It will report which packages are already loaded, installed or require installation.
 
 ```{r check_easy, message = T}
-check_sesh("sesh_2018-08-18.csv") # check against currently installed versions
+check_sesh("sesh_2018-08-19.csv") # check against currently installed versions
 ```
 
 This just confirms our current session info matches the session info we saved two seconds ago, duh.
 
-#### Simulated time-travel
+##### Simulated time travel
 
-Let's pretend we are visiting a past script we wrote. So let's install older versions just to mess it up a little and simulate time-travel.
+Let's pretend we are visiting a past script and let's pretend we wrote that past script sometime after `forcats` intial realse, Aug 29, 2016.
 
-Pretend you are picking up a script that you wrote last year. Scary for sure, but a little less scary, when you let `sesh` take care of the package dependencies.
+To re-create this scenario, we will re-install two common cases:
 
-Here are two common cases: a prior CRAN release version and a package from GitHub at prior commit.
+* a prior CRAN release version
+* a package from GitHub at prior commit
 
-```{r mess_up, message = F}
-devtools::install_version("forcats", "0.2.0", reload = F)
-devtools::install_github("tidyverse/stringr@bf48d9d64a412dd67f76fc24b7d81a6a6c066105", reload = F)
+```{r mess_up, eval = F}
+devtools::install_version("forcats", "0.1.0", reload = F)
+devtools::install_github("tidyverse/tidyr@bd0c6b09052e91a4d283b2be6c8d3c5a6769b910", reload = F)
 ```
 
-Restart your R session here to reload the newly download version.
+It is a good idea to restart your R session whenever you install an already attached package, like now.
 
-```{r force-unload-hidden, echo=F}
-unloadNamespace("roxygen2")
+```{r re-load, eval = F}
+library(forcats)
+library(tidyr)
+
+save_sesh("sesh_2017-10-01.csv")
 ```
 
+##### Ending time warp
+
+Bringing us back to back to now.
+
+```{r back_to_now, eval=F}
+install.packages("forcats")
+install.packages("tidyr")
+
+library(forcats)
+library(tidyr)
+```
+
+##### Pretend pick up
+
+So now let's pretend we are picking up that year-old, dusty script.
 
 ```{r}
-library(forcats)
-library(stringr)
-
-sesh()
+read_sesh("sesh_2017-10-01.csv")
 ```
+ 
+ Sure, we are a little nervous because perhaps by upgrading our package versions we have inadvertantly broken something.
 
+But our new found `sesh`abilities make dealing with diffs simple and straight forward.
 
-Now re-check our previous session
+##### Check list
+
+In order to see what pacakges are differnt between the "old script" and our library today, use `check_sesh`.
 
 ```{r re-check, message = T}
-check_sesh("sesh_2018-08-18.csv")
+check_sesh("sesh_2017-10-01.csv")
 ```
 
-That's cool, `sesh::check_sesh()` shows us the difference between our currently installed packages and the "past" session version.
+That's shows us the difference between our currently installed versions and the "past" versions.
 
-The function `install_sesh()` will restore matching versions. By looking at the `source` and `version`, it will attempt to install the sesh version in a folder in `~/.Trash/` and let you know if it was succesful.
+The function `install_sesh()` will re-install matching versions. By looking at `source` and `version`, it will attempts to install the sesh version in `~/.Trash/` and tell you if it was succesful. By keeping a temporary library in  `~/.Trash/`, `sesh` contains conflicts and doesn't take up disk space long term, because `macOS` deletes any files in there after 30 days.
 
-`sesh` does not touch `.libPaths()`, so it won't intefer with you globally installed package versions. By using `~/.Trash/` as temporary library, `sesh` simply tells itself to load conflicting libraries from there.
+`sesh` does not touch `.libPaths()`, so it will not interfer with your globally installed package versions.
 
-```{r install}
-install_sesh("sesh_2018-08-18.csv")
+```{r install, cache = F}
+install_sesh("sesh_2017-10-01.csv")
 ```
 
-Great, now you have the the right package versions installed to reproduce your "old" script.
+Great, now we have the the right package versions installed to rerun our "old" script, but as it sits right now the matching versions are not loaded.
 
-Right now the matching versions are not loaded, we need to call `sesh_load()` for it them to be attached.
+We need to call `sesh_load()` to attach them. We should also restart the R session again because we re-installed loaded packages.
 
-The underlying CSV file was added onto by `install_sesh()` and `load_sesh()` looks for those modifications to redirect `lib.loc` to the temporary sesh lib in `~/.Trash`.
+```{r echo = F}
+unloadNamespace("forcats")
+unloadNamespace("tidyr")
+```
 
-```{r}
-load_sesh("sesh_2018-08-18.csv")
+```{r, message=T}
+load_sesh("sesh_2017-10-01.csv")
 ```
 
 And re-checking we see...
 
-```{r}
-check_sesh("sesh_2018-08-18.csv")
+```{r, message=T}
+check_sesh("sesh_2017-10-01.csv")
 ```
 
-### Going back
+All that is left to do now is source that old script!
 
-When you are done working with the pacakge version from the past `sesh` you can go back to your global version like this.
+##### Un-seshing
 
-In this demo the global versions right now are the back in time version forcats-v0.2.0 and stringr@bf48d9d.
+When you are done working with the past `sesh` versions, you can go back to your current global versions immediately. Just restart your R session and attach your libraries like normal.
+
+There is also the helper function `unload_sesh()` to do this without restarting, but it's vunerable to `dependencies`,
 
 ```{r}
-unload_sesh("sesh_2018-08-18.csv")
+unload_sesh("sesh_2017-10-01.csv")
 
 library(forcats)
-library(stringr)
+library(tidyr)
 
 sesh()
 ```

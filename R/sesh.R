@@ -71,30 +71,44 @@ check_sesh <- function(path) {
             dplyr::filter( v != version | is.na(version) )
     )
 
-    if ( !"sesh_lib" %in% names(require_action) ) {
-        require_action <- require_action %>%
-            dplyr::mutate(sesh_lib = NA)
-    }
-    require_action <- require_action %>%
-        dplyr::filter(is.na(sesh_lib))
 
-    # these pacakges fall into two catergories (installed but not loaded and wrong version installed)
-
+    # these pacakges fall into three catergories (installed but not loaded, already sesh installed but not loaded, and wrong version installed)
     if (nrow(require_action) == 0 ) {
         message("Loaded versions match sesh!")
+        return()
     }
 
-    # check that correct versions just aren't loaded
+    # Make a temporary library to not interfer with global installs
+    sesh_name <-  gsub(".*(sesh_.*)\\.csv", "\\1", path)
+    sesh_lib <- glue::glue('~/.Trash/{sesh_name}/')
+
+    # check if a library was already built
+    # prevents loading problems if install exists are performed
+    if ( dir.exists(sesh_lib) ) {
+        sesh_installed <- dplyr::filter(require_action, package %in% dir(sesh_lib))
+        require_action <- require_action %>%
+            dplyr::anti_join(sesh_installed)
+    } else sesh_installed <- data.frame()
+
+    if (nrow(sesh_installed) > 0) {
+        message('These sesh-version are already installed in a sesh-lib.')
+        .print_capture( paste0(sesh_installed$package, " ",
+                              sesh_installed$v, " installed in ", sesh_lib ,".") )
+        message("Call load_sesh() to attach them.")
+    }
+
+
+    # check that correct versions just aren't loaded, but installed globally
     ready_to_load <- require_action %>%
         dplyr::filter(is.na(version)) %>%
         dplyr::mutate(installed_version = purrr::map2_chr(package, v, ~ .check_installed(.x, .y))) %>%
         dplyr::filter(v == installed_version)
 
     if (nrow(ready_to_load) > 0) {
-        message('These sesh-version / installed-version match:')
+        message('These sesh-version / installed-version already match.')
         .print_capture( paste(ready_to_load$package,
                            ready_to_load$v, "/", ready_to_load$installed_version ) )
-        message("call install_sesh() to safely install")
+        message("call load_sesh() to attach them")
     }
 
     # versions don't match
@@ -109,7 +123,7 @@ check_sesh <- function(path) {
             require_install %>%
                 dplyr::select(package, sesh_version = v, installed_version = version)
         )
-        message("call install_sesh() to safely install")
+        message("Call install_sesh() to safely install.")
     }
 }
 
@@ -132,21 +146,28 @@ load_sesh <- function(path) {
         message("Loaded versions match sesh!")
     }
 
-    sesh_to_load <- require_action %>%
-        dplyr::filter(!is.na(sesh_lib))
+    # Make a temporary library to not interfer with global installs
+    sesh_name <- gsub(".*(sesh_.*)\\.csv", "\\1", path)
+    sesh_lib <- glue::glue('~/.Trash/{sesh_name}/')
 
-    if (nrow(sesh_to_load) > 0) {
-        message(glue::glue('Loading from sesh library: { paste(sesh_to_load$package, collapse = ", ") }'))
+    # check if a library was already built
+    # prevents loading problems if install exists are performed
+    if ( dir.exists(sesh_lib) ) {
+        already_seshed <- dplyr::filter(require_action, package %in% dir(sesh_lib))
+        require_action %<>% dplyr::anti_join(already_seshed)
+    } else dir.create(sesh_lib)
 
-        purrr::walk2(sesh_to_load$package, sesh_to_load$sesh_lib,
+    if (nrow(already_seshed) > 0) {
+        message(glue::glue('Loading from sesh library: { paste(already_seshed$package, collapse = ", ") }'))
+
+        purrr::walk2(already_seshed$package, sesh_lib,
                      function(x, y) {
-                         unloadNamespace(paste0("package:", x)) # detach package if loaded
+                         # unloadNamespace(paste0("package:", x)) # detach package if loaded
                          library(x, lib.loc = y, character.only = TRUE)
                      } )
     }
 
     ready_to_load <- require_action %>%
-        dplyr::filter(is.na(sesh_lib)) %>%
         dplyr::mutate(installed_lib = purrr::map2_chr(package, v, ~.check_installed(.x, .y))) %>%
         dplyr::filter( !is.na(installed_lib) )
 
@@ -155,18 +176,18 @@ load_sesh <- function(path) {
 
         purrr::walk2(ready_to_load$package, ready_to_load$installed_lib,
               function(x, y) {
-                  unloadNamespace(paste0("package:", x)) # detach package if loaded
+                  # unloadNamespace(paste0("package:", x)) # detach package if loaded
                   library(x, lib.loc = y, character.only = TRUE)
               } )
     }
 
     suppressMessages(
-        require_action %<>%
+        require_install <- require_action %>%
         dplyr::anti_join(ready_to_load) %>%
-        dplyr::anti_join(sesh_to_load)
+        dplyr::anti_join(already_seshed)
     )
 
-    if (nrow(require_action) > 0 ) {
+    if (nrow(require_install) > 0 ) {
         message( glue::glue('These sesh-version / installed-version do not match:
                            {paste(require_install$package,
                             require_install$v, "/", require_install$version)}
@@ -200,24 +221,34 @@ install_sesh <- function(path, ...) {
     }
     else {
 
-        loadable <- require_action %>%
+        already_installed <- require_action %>%
             dplyr::filter(is.na(version)) %>%
             dplyr::mutate(installed_version = purrr::map2_chr(package, v, ~ .check_installed(.x, .y))) %>%
             dplyr::filter(v == installed_version)
 
-        if (nrow(loadable) == nrow(require_action)) {
-            message("Sesh versions already installed, use `load_sesh()` to attach.")
+        if (nrow(already_installed) == nrow(require_action)) {
+            message("Installed versions match, use `load_sesh()` to attach.")
             return()
         }
 
-        # make a throwaway install for sesh
-        sesh_lib <- glue::glue('~/.Trash/sesh_{as.character(Sys.Date())}/')
+        suppressMessages(
+            require_action <- require_action %>%
+            dplyr::anti_join(already_installed)
+        )
 
-        # maybe add overwrite as argument
-        if (dir.exists(sesh_lib)) unlink(sesh_lib, recursive = TRUE)
-        # will cause loading problems if old folder exists when installs are performed
+        if (nrow(require_action) == 0) return()
 
-        dir.create(sesh_lib)
+        # Make a temporary library to not interfer with global installs
+        sesh_name <- gsub(".*(sesh_.*)\\.csv", "\\1", path)
+        sesh_lib <- glue::glue('~/.Trash/{sesh_name}/')
+
+        # check if a library was already built
+        # prevents loading problems if install exists are performed
+        if ( dir.exists(sesh_lib) ) {
+            already_seshed <- dplyr::filter(require_action, package %in% dir(sesh_lib))
+            require_action %<>% dplyr::anti_join(already_seshed)
+        } else dir.create(sesh_lib)
+
         message( glue::glue('Installing sesh lib in: {sesh_lib}') )
 
         # Go after the repos
@@ -227,12 +258,12 @@ install_sesh <- function(path, ...) {
 
         if (nrow(gh) > 0) {
             gh <- gh %>%
-                dplyr::mutate(repo = gsub(".*\\((.*)\\)", "\\1", source)) %>%
+                dplyr::mutate(repo = gsub(".*\\((.*)\\)", "\\1", s)) %>%
                 dplyr::mutate(
                     install_result = purrr::map(repo,
                                 purrr::safely(
-                                    ~ withr:with_libpaths(sesh_lib,
-                                                          devtools::install_github(., auth_token = auth_token)))),
+                                    ~ withr::with_libpaths(sesh_lib,
+                                                          devtools::install_github(., reload = F)))),
                     install_result = .extract_result(install_result) )
         }
 
@@ -266,29 +297,16 @@ install_sesh <- function(path, ...) {
         }
         else {
             gotten <- needed %>%
-                dplyr::filter(install_result != "Error")
+                dplyr::filter(install_result == "Success")
         }
 
-        gotten %<>%
-            dplyr::select(package, install_result) %>%
-            dplyr::distinct() %>% # not sure if this is really needed
-            dplyr::mutate(sesh_lib = sesh_lib)
+        message(glue::glue('{nrow(gotten)} succesful install of {nrow(needed)} needed package.'))
 
-        # gotten %>%
-        #     purrr::walk2(.$package, .$sesh_lib,
-        #                  function(x, y) {
-        #                      unloadNamespace(paste0("package:", x)) # detach package if loaded
-        #                      library(x, lib.loc = y, character.only = TRUE)
-        #                  } )
-
-        message(glue::glue('{nrow(gotten)} succesful install of {nrow(needed)} needed package.
-                           Adding sesh lib and resaving CSV ...'))
-
-        suppressMessages(
-            read_sesh(path) %>%
-            dplyr::full_join(gotten) %>%
-            readr::write_csv(glue::glue('{path}'))
-        )
+        # suppressMessages(
+        #     read_sesh(path) %>%
+        #     dplyr::full_join(gotten) %>%
+        #     readr::write_csv(glue::glue('{path}'))
+        # )
 
         message("Use `sesh_load()` to attach sesh versions.")
     }

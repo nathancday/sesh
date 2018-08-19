@@ -1,0 +1,4 @@
+Name: Document a package
+Description: Calls devtools::document()
+Binding: executeDevtoolsDocument
+Interactive: false
