@@ -1,22 +1,19 @@
 ---
-title: "Getting started"
-author: "Nathan Day"
-date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Vignette Title}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+output:
+  github_document:
+    html_preview: false
 ---
 
-```{r setup, include = FALSE}
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, echo = FALSE}
 knitr::opts_chunk$set(
-  comment = "#",
-  options(repos="https://cran.rstudio.com" )
+  collapse = TRUE
 )
+options(tibble.print_min = 5, tibble.print_max = 5)
 ```
 
-# sesh
+# sesh <img src="inst/sesh_hex.png" align="right" />
 
 Is a light-weight tool for tracking R packages. It sits somewhere between `reprex` and `packrat` and revolves around `CSV` files to store key package information.
 
@@ -38,28 +35,25 @@ devtools::load_all("~/future/sesh/")
 
 ### Purpose
 
-The concept behind `sesh` is being able to record information about specific package versions for sharing with others, including your future self.
+The concept behind `sesh` is being able to record information about specific package versions for sharing with others, including your future self. Using `sesh` as part of your workflow gives you extra reprodu-security for individual scripts.
 
-Using `sesh` as part of your workflow gives you extra a little extra reprodu-security at the individual Rscript level.
-
-It is very similar in aim to `packrat`, but doesn't tie you into a RStudio Project. Instead of re-installing all of the required packages for each project, `sesh` checks against currently installed versions and builds a disposable library path for itself in `~/.Trash/` if matching versions are required.
-
-It does not touch R's deafult package search path.
+It is very similar in aim to `packrat`, but doesn't tie you into a RStudio Project. It is also similar to `docker` but doesn't try to track everything, just the R packages you are using.
 
 ### Demo
 
-We start by loading `forcats` and `tibble` from their current CRAN versions, just so we have some packages beyond R-core.
+Lets pretend we are using two `tidyverse` pacakges, `forcats` and `tibble`, over the course of a two year project. Today we are using the current CRAN versions, but in the past we have used various version and we prefer updating to keep up with the latest features.
 
 ```{r load_examples, message = F}
+# today
 library(forcats) # v0.3.0
 library(tidyr) # v0.8.1
 ```
 
 ##### Saving critial packages for your script
 
-`session_info()` is an improvement on `sessionInfo()` for readability, but is still fairly verbose.
+Recording the package versions we use for analysis is important for reproducibily. But part of the open-source experience is being able play around with lots of rapidly changing tools. 
 
-`sesh` aims to filter this output to only the attached packages. It also captures information about the current `R-core` version.
+Using `devtools::session_info()` or `sessionInfo()` to look at this information is great and `sesh` makes it easier to manage this data. The function `sesh()` gives an overview of the attached packages, their version and their source.
 
 ```{r sesh}
 sesh()
@@ -69,9 +63,9 @@ This dataframe is the essense of `sesh`, a light, easy to share, record of your 
 
 ##### Saving your `sesh`
 
-To save your current `sesh()`, use `save_sesh()`.
+To save your current `sesh()`, use `save_sesh()`. It will record the vital information to re-load all of your attached `pacakge@verion`s and write it to disk as a `CSV`.
 
-It will record the vital information to re-load all of your attached `pacakge@verion`s and write it to disk as a `CSV`.
+By recording the attached packages and saving it with your analysis, you can pick up scripts in the future with no worries about breaking package changes.
 
 ```{r save_easy, message = T}
 save_sesh()
@@ -79,21 +73,21 @@ save_sesh()
 
 The default `path`, is set up to name the output as "sesh_$SYS-DATE.csv". But it uses the [`glue`](https://github.com/tidyverse/glue) package to paste together R variables, so you could include custom gloabls to fit your tastes.
 
-##### Checking out an old `sesh`
+##### A simple case
 
-Just to show off the tools, let's re-check the `CSV` we just saved for our current `sesh`.
-
-The function `check_sesh()` will compare the currently loaded/installed package versions against a `sesh` record. It will report which packages are already loaded, installed or require installation.
+The function `check_sesh()` will compare the currently loaded/installed package versions against a `sesh` record. It will report which packages are already loaded, installed (but not loaded) or require installation.
 
 ```{r check_easy, message = T}
-check_sesh("sesh_2018-08-19.csv") # check against currently installed versions
+check_sesh("sesh_2018-08-20.csv") # check against currently installed versions
 ```
 
-This just confirms our current session info matches the session info we saved two seconds ago, duh.
+This just confirms our current session info matches the session info we saved two seconds ago, duh. Not a very cool use case
 
 ##### Simulated time travel
 
-Let's pretend we are visiting a past script and let's pretend we wrote that past script sometime after `forcats` intial realse, Aug 29, 2016.
+Close your eyes and pretend....
+
+We need to reproduce a script we wrote back on October 1st 2016.
 
 To re-create this scenario, we will re-install two common cases:
 

@@ -2,4 +2,5 @@ package,v,s
 base,3.5.0,local
 bindrcpp,0.2.2,CRAN (R 3.5.0)
 forcats,0.3.0,CRAN (R 3.5.0)
+sesh,0.0.1,Github (nathancday/sesh@096309f)
 tidyr,0.8.1,CRAN (R 3.5.0)
