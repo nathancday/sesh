@@ -1,4 +1,3 @@
-package,source,version
-base,local,1e3
-bindrcpp,CRAN (R 3.5.0),1e3
-testthat,CRAN (R 3.5.0),1e3
+package,s,version
+sesh,Github (nathancday/sesh@096309f),1000
+testthat,CRAN (R 3.5.0),1000

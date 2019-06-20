@@ -1,4 +1,3 @@
 package,v,s
-base,3.5.0,local
-bindrcpp,0.2.2,CRAN (R 3.5.0)
-testthat,2.0.0,CRAN (R 3.5.0)
+sesh,0.0.1,Github (nathancday/sesh@096309f)
+testthat,2.0.1,CRAN (R 3.5.0)

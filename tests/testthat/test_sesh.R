@@ -21,7 +21,7 @@ test_that("checking works", {
 
 # build an impossible version number by hand
 read_sesh("start.csv") %>%
-    dplyr::select(-sesh_v) %>%
+    dplyr::select(-v) %>%
     dplyr::mutate(version = 1000) %>%
     readr::write_csv("bad.csv")
 

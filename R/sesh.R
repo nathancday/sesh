@@ -7,8 +7,9 @@
 #' @export
 sesh <- function() {
     devtools::session_info()$packages %>%
-        dplyr::filter(`*` == "*", (!grepl("local", source) | package == "base")) %>%
-        dplyr::select(package, version, source)
+        dplyr::filter(attached == TRUE,
+                      (!grepl("local", source) | package == "base")) %>%
+        dplyr::select(package, version = loadedversion,source)
 }
 
 #' Save `sesh` output as csv.
@@ -68,14 +69,14 @@ check_sesh <- function(path) {
 
     suppressMessages(
         require_action <- dplyr::full_join(past, cur) %>%
-            dplyr::filter( v != version | is.na(version) )
+            dplyr::filter( (v != version) | is.na(version) )
     )
 
 
     # these pacakges fall into three catergories (installed but not loaded, already sesh installed but not loaded, and wrong version installed)
     if (nrow(require_action) == 0 ) {
         message("Loaded versions match sesh!")
-        return()
+        return(invisible())
     }
 
     # Make a temporary library to not interfer with global installs
@@ -91,10 +92,11 @@ check_sesh <- function(path) {
     } else sesh_installed <- data.frame()
 
     if (nrow(sesh_installed) > 0) {
-        message('These sesh-version are already installed in a sesh-lib.')
-        .print_capture( paste0(sesh_installed$package, " ",
-                              sesh_installed$v, " installed in ", sesh_lib ,".") )
-        message("Call load_sesh() to attach them.")
+        message(
+            'These sesh-version are already installed in a sesh-lib.\n',
+            .print_capture( paste0(sesh_installed$package, " ",
+                              sesh_installed$v, " installed in ", sesh_lib ,".") ),
+            "\nCall load_sesh() to attach them.")
     }
 
 
@@ -105,10 +107,10 @@ check_sesh <- function(path) {
         dplyr::filter(v == installed_version)
 
     if (nrow(ready_to_load) > 0) {
-        message('These sesh-version / installed-version already match.')
+        message('These sesh-version / installed-version already match:\n',
         .print_capture( paste(ready_to_load$package,
-                           ready_to_load$v, "/", ready_to_load$installed_version ) )
-        message("call load_sesh() to attach them")
+                           ready_to_load$v, "/", ready_to_load$installed_version ) ),
+        "\nCall load_sesh() to attach them")
     }
 
     # versions don't match
@@ -118,12 +120,11 @@ check_sesh <- function(path) {
     )
 
     if (nrow(require_install) > 0) {
-        message('These sesh_version / installed_version do not match:')
+        message('These sesh_version / installed_version do not match:\n',
         .print_capture(
-            require_install %>%
-                dplyr::select(package, sesh_version = v, installed_version = version)
-        )
-        message("Call install_sesh() to safely install.")
+            dplyr::select(require_install, package, sesh_version = v, installed_version = version)
+        ),
+        "\nCall install_sesh() to safely install.")
     }
 }
 
@@ -327,7 +328,7 @@ unload_sesh <- function(path) {
 
 # https://stackoverflow.com/questions/26083625/how-do-you-include-data-frame-output-inside-warnings-and-errors
 .print_capture <- function(x) {
-    paste0(paste(capture.output(print(x)), collapse = "\n"), "\n")
+    paste(capture.output(print(x)), collapse = "\n")
 }
 
 #' a hidden function to parse return from 'safely()'
@@ -340,12 +341,12 @@ unload_sesh <- function(path) {
 
 # returns installed version for anything in .libPaths()
 .check_installed <- function(package, version) {
-    ip <- installed.packages()
+    ip <- as.data.frame(installed.packages())
 
     if (package %in% rownames(ip)) {
-        matches <- ip[package == rownames(ip), ] %>%
-            as.data.frame() %>%
-            dplyr::filter(Version == version) %>%
+        matches <- ip %>%
+            dplyr::filter(Package == package,
+                          Version == version) %>%
             dplyr::slice(1)
     }
 
@@ -355,8 +356,10 @@ unload_sesh <- function(path) {
 }
 
 .check_loaded <- function() {
-    dplyr::filter(devtools::session_info()$packages, `*` == "*", (!grepl("local", source) | package == "base")) %>%
-        dplyr::select(package, loaded_v = version)
+    dplyr::filter(devtools::session_info()$packages,
+                  attached == TRUE,
+                  (!grepl("local", source) | package == "base")) %>%
+        dplyr::select(package, loaded_v = loadedversion)
 }
 
 

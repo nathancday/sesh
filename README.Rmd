@@ -48,8 +48,8 @@ Lets pretend we are using two `tidyverse` pacakges, `forcats` and `tibble`, over
 
 ```{r load_examples, message = F}
 # today
-library(forcats) # v0.3.0
-library(tidyr) # v0.8.1
+library(forcats) # v0.4.0
+library(tidyr) # v0.8.3
 ```
 
 ### Saving critial packages for your script
@@ -81,7 +81,7 @@ The default `path`, is set up to name the output as "sesh_$SYS-DATE.csv". But it
 The function `check_sesh()` will compare the currently loaded/installed package versions against a `sesh` record. It will report which packages are already loaded, installed (but not loaded) or require installation.
 
 ```{r check_easy, message = T}
-check_sesh("sesh_2018-08-20.csv") # check against currently installed versions
+check_sesh("sesh_2019-06-20.csv") # check against currently installed versions
 ```
 
 This just confirms our current session info matches the session info we saved two seconds ago, duh. Not a very cool use case
@@ -100,7 +100,7 @@ devtools::install_version("forcats", "0.1.0", reload = F)
 devtools::install_github("tidyverse/tidyr@bd0c6b09052e91a4d283b2be6c8d3c5a6769b910", reload = F)
 ```
 
-It is a good idea to restart your R session whenever you install an already attached package, like now.
+It is a good idea to restart your R session whenever you install an already attached package, so like now.
 
 ```{r re-load, eval = F}
 library(forcats)

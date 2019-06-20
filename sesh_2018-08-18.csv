@@ -1,5 +1,0 @@
-package,v,s
-base,3.5.0,local
-bindrcpp,0.2.2,CRAN (R 3.5.0)
-forcats,0.2.0,url
-stringr,1.2.0.9000,Github (tidyverse/stringr@bf48d9d)
