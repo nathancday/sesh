@@ -1,56 +1,42 @@
-
-#' Attached packages and their versions
+#' See info about attached R packages during an R session
 #'
-#' A light-weight `devtools::session_info()`.
+#' A lighter version `devtools::session_info()` that returns a dataframe
+#' and only *attached* libraries
+#' @md
 #' @return A data frame.
-#' @importFrom magrittr "%>%"
 #' @export
 sesh <- function() {
-    devtools::session_info()$packages %>%
-        dplyr::filter(attached == TRUE,
-                      (!grepl("local", source) | package == "base")) %>%
-        dplyr::select(package, version = loadedversion,source)
+  session_info() %>%
+    .extract_sesh()
 }
-
 #' Save `sesh` output as csv.
 #'
 #' Renames columns from `sesh()` to work `sesh_check()`.
 #'
-#' @return Saves a CSV with essential information about loaded packages.
+#' @return Saves a RDS file with essential package information.
 #' @importFrom magrittr "%>%"
+#' @importFrom dplyr rename_all
+#' @importFrom glue glue
 #' @examples
 #' save_sesh()
 #' @export
-save_sesh <- function(path = 'sesh_{as.character(Sys.Date())}.csv') {
-
-    file_name <- glue::glue(path)
-
+save_sesh <- function(path = 'sesh_{as.character(Sys.Date())}.RDS') {
+    file_name <- glue(path)
     sesh() %>%
-        dplyr::rename(v = version, s = source) %>%
-        readr::write_csv(file_name)
-
-
-
-    message(glue::glue('Saved sesh as: {file_name}'))
+        rename_all(~ paste0(., "_sesh")) %>%
+        saveRDS(path)
+    message(glue('Saved sesh as: {file_name}'))
 }
-
-
-#' Read a sesh.
-#'
-#' Gives a table from
+#' Read sesh RDS to see critical package info.
 #'
 #' @importFrom magrittr "%>%"
 #' @export
 read_sesh <- function(path) {
-    read <- suppressMessages(readr::read_csv(path))
+    read <- readRDS(path)
 
-    # want ability to read output from 'session_info$packages %>% data.frame %>% write_csv' too
+    # want ability to read output from 'session_info()`
 
-    if ("version" %in% names(read)) {
-        message("Assuming `version` represents `v`")
-        read <- dplyr::rename(read, v = version)
-    }
-    return(read)
+
 }
 
 #' Check current conditions against a sesh.
@@ -362,4 +348,16 @@ unload_sesh <- function(path) {
         dplyr::select(package, loaded_v = loadedversion)
 }
 
+#' Extract a data frame of attached packages
+#' @importFrom magrittr "%>%"
+#' @importFrom devtools session_info
+#' @importFrom dplyr filter select
+.extract_sesh <- function(sesh) {
+  stopifnot(class(sesh) == "session_info")
+  sesh %>%
+    .[["packages"]] %>%
+    filter(attached == TRUE,
+           (!grepl("local", source) | package == "base")) %>%
+    select(package, loadedversion, source)
+}
 

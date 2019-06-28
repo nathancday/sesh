@@ -4,10 +4,10 @@
 \alias{save_sesh}
 \title{Save `sesh` output as csv.}
 \usage{
-save_sesh(path = "sesh_{as.character(Sys.Date())}.csv")
+save_sesh(path = "sesh_{as.character(Sys.Date())}.RDS")
 }
 \value{
-Saves a CSV with essential information about loaded packages.
+Saves a RDS file with essential package information.
 }
 \description{
 Renames columns from `sesh()` to work `sesh_check()`.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/sesh.R
 \name{sesh}
 \alias{sesh}
-\title{Attached packages and their versions}
+\title{See info about attached R packages during an R session}
 \usage{
 sesh()
 }
@@ -10,5 +10,6 @@ sesh()
 A data frame.
 }
 \description{
-A light-weight `devtools::session_info()`.
+A lighter version \code{devtools::session_info()} that returns a dataframe
+and only \emph{attached} libraries
 }
