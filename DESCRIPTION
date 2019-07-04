@@ -1,21 +1,24 @@
 Package: sesh
 Type: Package
-Title: Share package information.
+Title: sesh
 Version: 0.0.1
 Author: Nathan Day
 Maintainer: Nathan Day <nathancday@gmail.com>
-Description: A light weight CSV based tool to record, load and install specific 
+Description: A light weight CSV-based tool to record, load and install specific 
     package versions in the name of reproduciblity. Stands on the shoulder of `devtools`,
-    and can flexibly download from the CRAN archives and GitHub.
+    and flexibly downloads from the CRAN archives and GitHub.
 License: MIT
 Encoding: UTF-8
 LazyData: true
 Imports:
     magrittr,
-    dplyr
+    dplyr,
+    glue,
+    devtools
 Suggests:
     testthat,
     knitr,
-    rmarkdown
+    rmarkdown,
+    covr
 RoxygenNote: 6.1.1
 VignetteBuilder: knitr

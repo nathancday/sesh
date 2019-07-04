@@ -14,7 +14,10 @@ options(tibble.print_min = 5, tibble.print_max = 5)
 
 # sesh <img src="inst/sesh_hex.png" align="right" />
 
-
+<!-- badges: start -->
+[![Travis build status](https://travis-ci.org/nathancday/sesh.svg?branch=master)](https://travis-ci.org/nathancday/sesh)
+[![Codecov test coverage](https://codecov.io/gh/nathancday/sesh/branch/master/graph/badge.svg)](https://codecov.io/gh/nathancday/sesh?branch=master)
+<!-- badges: end -->
 
 ## Overview
 

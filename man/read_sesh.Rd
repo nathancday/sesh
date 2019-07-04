@@ -2,10 +2,10 @@
 % Please edit documentation in R/sesh.R
 \name{read_sesh}
 \alias{read_sesh}
-\title{Read a sesh.}
+\title{Read sesh RDS to see critical package info.}
 \usage{
 read_sesh(path)
 }
 \description{
-Gives a table from
+Read sesh RDS to see critical package info.
 }
