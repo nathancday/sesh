@@ -6,17 +6,18 @@ test_that("saving works",{
     expect_message(save_sesh("start.csv"), "Saved")
 })
 test_that("saving fails", {
-    expect_error(save_sesh(devtools::sessionInfo()))
+    expect_error(save_sesh(NULL))
 })
 test_that("reading words", {
-    expect_is(read_sesh("end.csv"), "data.frame")
+    expect_is(read_sesh("start.csv"), "data.frame")
 })
 test_that("reading fails", {
     expect_error(read_sesh("not a path"))
 })
 
 test_that("checking works", {
-    expect_message(check_sesh("start.csv"), "match")
+    expect_message(check_sesh("old.csv"), "installed")
+    expect_message(check_sesh("old.csv"), "missing")
 })
 
 # build an impossible version number by hand

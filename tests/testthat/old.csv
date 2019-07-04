@@ -1,5 +1,4 @@
-package,sesh_v,source
-base,3.5.0,local
+package_sesh,loadedversion_sesh,source_sesh
 bindrcpp,0.2.2,CRAN (R 3.5.0)
 testthat,2.0.0,CRAN (R 3.5.0)
 tidyr,0.8.0,cran (@0.8.1)
