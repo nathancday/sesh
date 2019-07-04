@@ -1,4 +1,4 @@
-package,v,s
-sesh,0.0.1,Github (nathancday/sesh@096309f)
-testthat,2.0.1,CRAN (R 3.5.0)
-tidyr,0.8.3,CRAN (R 3.5.2)
+"package","loadedversion","source"
+"sesh","0.0.1","Github (nathancday/sesh@edd907c)"
+"testthat","2.0.1","CRAN (R 3.5.0)"
+"tidyr","0.8.3","CRAN (R 3.5.2)"

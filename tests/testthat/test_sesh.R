@@ -5,14 +5,11 @@ start <- save_sesh("start.csv")
 test_that("saving works",{
     expect_message(save_sesh("start.csv"), "Saved")
 })
-test_that("saving fails", {
-    expect_error(save_sesh(NULL))
-})
 test_that("reading words", {
     expect_is(read_sesh("start.csv"), "data.frame")
 })
 test_that("reading fails", {
-    expect_error(read_sesh("not a path"))
+    expect_error(supressWarning(read_sesh("not a path")))
 })
 
 test_that("checking works", {
@@ -22,21 +19,23 @@ test_that("checking works", {
 
 # build an impossible version number by hand
 read_sesh("start.csv") %>%
-    dplyr::select(-v) %>%
-    dplyr::mutate(version = 1000) %>%
-    readr::write_csv("bad.csv")
+    dplyr::mutate(loadedversion = "1000") %>%
+    write.csv("bad.csv", row.names = FALSE)
 
 test_that("checking fails", {
-    expect_message(check_sesh("bad.csv"), "mismatched")
+    expect_message(check_sesh("bad.csv"), "missing")
 })
 
 library(tidyr)
 save_sesh("end.csv")
-pacman::p_unload("tidyr")
+detach("package:tidyr", force = TRUE)
+end <- read_sesh("end.csv")
 
 test_that("loading works", {
-    dat <- load_sesh("end.csv")
-    expect_equal(dat$sesh_v, dat$loaded_v)
+    expect_message(load_sesh("end.csv"), "Loading")
+    cur <- sesh()
+    expect_equal(end$loadedversion[end$package == "tidyr"],
+                 cur$loadedversion[cur$package == "tidyr"])
 })
 
 test_that("loading fails", {

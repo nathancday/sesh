@@ -1,3 +1,3 @@
-package,s,version
-sesh,Github (nathancday/sesh@096309f),1000
-testthat,CRAN (R 3.5.0),1000
+"package","loadedversion","source"
+"sesh","1000","Github (nathancday/sesh@edd907c)"
+"testthat","1000","CRAN (R 3.5.0)"
