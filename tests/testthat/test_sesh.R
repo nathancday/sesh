@@ -39,17 +39,12 @@ test_that("loading works", {
 })
 
 test_that("loading fails", {
-    dat <- load_sesh("bad.csv")
-    expect_false(all(dat$sesh_v == dat$loaded_v))
+    expect_message(load_sesh("bad.csv"), "do not match")
 })
 
-# old ggplot2
-read_sesh("end.csv") %>%
-    dplyr::mutate(sesh_v = ifelse(package == "tidyr", "0.8.0", sesh_v)) %>%
-    readr::write_csv("old.csv")
-
 test_that("install works", {
-    install_sesh("old.csv")
+    skip_on_travis()
+    install_sesh("test.csv")
 })
 
 # clean up / remove created files

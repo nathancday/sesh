@@ -5,8 +5,8 @@ Version: 0.0.1
 Author: Nathan Day
 Maintainer: Nathan Day <nathancday@gmail.com>
 Description: A light weight CSV-based tool to record, load and install specific 
-    package versions in the name of reproduciblity. Stands on the shoulder of `devtools`,
-    and flexibly downloads from the CRAN archives and GitHub.
+    package versions in the name of reproduciblity. Stands on the shoulders of
+    `devtools` and `remotes` to flexibly download from the CRAN archives and GitHub.
 License: MIT
 Encoding: UTF-8
 LazyData: true

@@ -4,7 +4,7 @@
 \alias{load_sesh}
 \title{Function to load out a sesh if required versions are installed.}
 \usage{
-load_sesh(path)
+load_sesh(path, interactive = TRUE)
 }
 \description{
 Function to load out a sesh if required versions are installed.
