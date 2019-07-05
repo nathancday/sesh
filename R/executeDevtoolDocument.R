@@ -1,7 +1,8 @@
 #' Call devtools::document()
 #'
 #' Fixes broken RStudio short cut CMD+SHIFT+S
+#' @importFrom rstudioapi sendToConsole
 #' @export
 executeDevtoolsDocument <- function() {
-    rstudioapi::sendToConsole("devtools::document()")
+    sendToConsole("devtools::document()")
 }

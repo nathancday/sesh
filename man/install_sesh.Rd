@@ -4,13 +4,13 @@
 \alias{install_sesh}
 \title{A function to install specific package versions in a temporary library.}
 \usage{
-install_sesh(path, ...)
+install_sesh(path, sesh_lib = "~/.Trash/sesh_lib/")
 }
 \arguments{
-\item{path}{A character. Valid file path to a \code{save_sesh()} output CSV.
-private repos.}
+\item{path}{A character. Valid file path to a \code{save_sesh()} output CSV.}
 
-\item{...}{Arguments passed to \code{devtools::install()}.}
+\item{sesh_lib}{Valid directory package for installation. Accepts
+\code{glue::glue()}'s '{func()}_result' syntax.}
 }
 \description{
 Works for packages installed from CRAN and GitHub. Assumes any GitHub PAT is

@@ -2,10 +2,13 @@
 % Please edit documentation in R/sesh.R
 \name{read_sesh}
 \alias{read_sesh}
-\title{Read sesh RDS to see critical package info.}
+\title{Read a saved CSV to see critical package info.}
 \usage{
 read_sesh(path)
 }
+\arguments{
+\item{path}{Valid path to a sesh saved CSV.}
+}
 \description{
-Read sesh RDS to see critical package info.
+Read a saved CSV to see critical package info.
 }

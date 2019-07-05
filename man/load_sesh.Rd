@@ -6,6 +6,11 @@
 \usage{
 load_sesh(path, interactive = TRUE)
 }
+\arguments{
+\item{path}{Valid path to a sesh saved CSV.}
+
+\item{interactive}{Returns a data frame of required installs if FALSE.}
+}
 \description{
 Function to load out a sesh if required versions are installed.
 }

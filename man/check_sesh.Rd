@@ -7,7 +7,7 @@
 check_sesh(path)
 }
 \arguments{
-\item{path}{A character. Valid path to a sesh CSV.}
+\item{path}{Valid path to a sesh saved CSV.}
 }
 \description{
 The workhorse that checks loaded and installed pacakge versions againstst

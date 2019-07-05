@@ -2,15 +2,18 @@
 % Please edit documentation in R/sesh.R
 \name{save_sesh}
 \alias{save_sesh}
-\title{Save `sesh` output as csv.}
+\title{Save `sesh` as csv.}
 \usage{
-save_sesh(path = "sesh_{as.character(Sys.Date())}.RDS")
+save_sesh(path = "sesh_{as.character(Sys.Date())}.csv")
+}
+\arguments{
+\item{path}{Valid path to a write a sesh saved CSV.}
 }
 \value{
-Saves a RDS file with essential package information.
+Writes a CSV file with essential package information.
 }
 \description{
-Renames columns from `sesh()` to work `sesh_check()`.
+Save `sesh` as csv.
 }
 \examples{
 save_sesh()

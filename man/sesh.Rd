@@ -10,6 +10,5 @@ sesh()
 A data frame.
 }
 \description{
-A lighter version \code{devtools::session_info()} that returns a dataframe
-and only \emph{attached} libraries
+A light version \code{devtools::session_info()}, with only the \emph{attached} libraries.
 }

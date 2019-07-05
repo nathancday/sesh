@@ -4,7 +4,10 @@
 \alias{.extract_sesh}
 \title{Extract a data frame of attached packages}
 \usage{
-.extract_sesh(sesh)
+.extract_sesh(session_info)
+}
+\arguments{
+\item{session_info}{Output from `devtools::session_info()`}
 }
 \description{
 Extract a data frame of attached packages

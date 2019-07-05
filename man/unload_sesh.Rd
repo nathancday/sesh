@@ -6,6 +6,9 @@
 \usage{
 unload_sesh(path)
 }
+\arguments{
+\item{path}{A character. Valid file path to a `save_sesh()` output CSV.}
+}
 \description{
 Useful for going back to gloabal versions when leaving a sesh.
 }

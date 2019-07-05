@@ -1,7 +1,6 @@
 #' See info about attached R packages during an R session
 #'
-#' A lighter version `devtools::session_info()` that returns a dataframe
-#' and only *attached* libraries
+#' A light version `devtools::session_info()`, with only the *attached* libraries.
 #' @md
 #' @return A data frame.
 #' @export
@@ -9,25 +8,25 @@ sesh <- function() {
   session_info() %>%
     .extract_sesh()
 }
-#' Save `sesh` output as csv.
+#' Save `sesh` as csv.
 #'
-#' Renames columns from `sesh()` to work `sesh_check()`.
-#'
-#' @return Saves a RDS file with essential package information.
+#' @param path Valid path to a write a sesh saved CSV.
+#' @return Writes a CSV file with essential package information.
 #' @importFrom magrittr "%>%"
-#' @importFrom dplyr rename_all
 #' @importFrom glue glue
+#' @importFrom utils write.csv
 #' @examples
 #' save_sesh()
 #' @export
-save_sesh <- function(path = 'sesh_{as.character(Sys.Date())}.RDS') {
+save_sesh <- function(path = 'sesh_{as.character(Sys.Date())}.csv') {
     file_name <- glue(path)
     sesh() %>%
       write.csv(path, row.names = FALSE)
     message(glue('Saved sesh as: {file_name}'))
 }
-#' Read sesh RDS to see critical package info.
+#' Read a saved CSV to see critical package info.
 #'
+#' @param path Valid path to a sesh saved CSV.
 #' @importFrom magrittr "%>%"
 #' @export
 read_sesh <- function(path) {
@@ -41,7 +40,7 @@ read_sesh <- function(path) {
 #' those specified in sesh.
 #'
 #' @md
-#' @param path A character. Valid path to a sesh CSV.
+#' @param path Valid path to a sesh saved CSV.
 #' @importFrom dplyr anti_join mutate
 #' @importFrom purrr map2_chr
 #' @export
@@ -110,7 +109,8 @@ check_sesh <- function(path) {
 #' Function to load out a sesh if required versions are installed.
 #'
 #' @importFrom magrittr "%>%" "%<>%"
-#'
+#' @param path Valid path to a sesh saved CSV.
+#' @param interactive Returns a data frame of required installs if FALSE.
 #' @export
 load_sesh <- function(path, interactive = TRUE) {
 
@@ -127,7 +127,7 @@ load_sesh <- function(path, interactive = TRUE) {
 
     # Make a temporary library to not interfer with global installs
     # sesh_name <- gsub(".*(sesh_.*)\\.csv", "\\1", path)
-    sesh_lib <- glue::glue('~/.Trash/sesh_lib/')
+    sesh_lib <- glue('~/.Trash/sesh_lib/')
 
     # check if a library was already built
     # prevents loading problems if install exists are performed
@@ -182,11 +182,10 @@ load_sesh <- function(path, interactive = TRUE) {
 #'
 #' Works for packages installed from CRAN and GitHub. Assumes any GitHub PAT is
 #' in `envar GITHUB_PAT`, per `devtools`.
-#'
 #'@md
 #'@param path A character. Valid file path to a `save_sesh()` output CSV.
-#'private repos.
-#'@param ... Arguments passed to `devtools::install()`.
+#'@param sesh_lib Valid directory package for installation. Accepts
+#'`glue::glue()`'s '{func()}_result' syntax.
 #'@importFrom magrittr "%>%"
 #'@importFrom purrr map safely
 #'@importFrom dplyr filter mutate bind_rows
@@ -194,7 +193,7 @@ load_sesh <- function(path, interactive = TRUE) {
 #'@importFrom glue glue
 #'@importFrom withr with_libpaths
 #'@export
-install_sesh <- function(path, sesh_lib = '~/.Trash/sesh_lib/', ...) {
+install_sesh <- function(path, sesh_lib = '~/.Trash/sesh_lib/') {
 
     # past <- read_sesh(path)
     # cur <- sesh()
@@ -255,6 +254,7 @@ install_sesh <- function(path, sesh_lib = '~/.Trash/sesh_lib/', ...) {
 #'
 #' Useful for going back to gloabal versions when leaving a sesh.
 #'
+#' @param path A character. Valid file path to a `save_sesh()` output CSV.
 #' @export
 unload_sesh <- function(path) {
     sesh <- read_sesh(path) %>%
@@ -264,28 +264,38 @@ unload_sesh <- function(path) {
 }
 
 
-# https://stackoverflow.com/questions/26083625/how-do-you-include-data-frame-output-inside-warnings-and-errors
+#' a hidden function to nicely print data from the console
+
+#' from: https://stackoverflow.com/questions/26083625/how-do-you-include-data-frame-output-inside-warnings-and-errors
+#' @param x expression to print
 .print_capture <- function(x) {
     paste(capture.output(print(x)), collapse = "\n")
 }
 
-#' a hidden function to parse return from 'safely()'
+#' a hidden function to parse return from 'purrr::safely()'
+#' @param x the return of an attempted install wrapped in `safely()`
 #' @importFrom magrittr "%>%"
-.extract_result <- . %>%
-    purrr::map(., purrr::possibly(~ ifelse(is.null(.[["result"]]),
+#' @importFrom purrr map possibly
+.extract_result <- function(x) {
+    map(x, possibly(~ ifelse(is.null(.[["result"]]),
                                            "Error",
                                            "Success"), NULL)) %>%
     unlist()
+}
 
-# returns installed version for anything in .libPaths()
+#' a hidden function to search installed versions
+#'
+#' @param package name of package
+#' @param version version of the package
+#' @importFrom dplyr filter select
 .check_installed <- function(package, version) {
     ip <- as.data.frame(installed.packages())
 
     if (package %in% rownames(ip)) {
         installed_already <- ip %>%
-            dplyr::filter(Package == package,
+            filter(Package == package,
                           Version == version) %>%
-            dplyr::slice(1)
+            slice(1)
     }
 
     if (nrow(installed_already) == 1) return( as.character(installed_already$LibPath) )
@@ -293,23 +303,17 @@ unload_sesh <- function(path) {
     else return(NA_character_)
 }
 
-.check_loaded <- function() {
-    dplyr::filter(devtools::session_info()$packages,
-                  attached == TRUE,
-                  (!grepl("local", source) | package == "base")) %>%
-        dplyr::select(package, loaded_v = loadedversion)
-}
-
 #' Extract a data frame of attached packages
+#'
+#' @param session_info Output from `devtools::session_info()`
 #' @importFrom magrittr "%>%"
 #' @importFrom devtools session_info
 #' @importFrom dplyr filter select
-.extract_sesh <- function(sesh) {
-  stopifnot(class(sesh) == "session_info")
-  sesh %>%
+.extract_sesh <- function(session_info) {
+  stopifnot(inherits(session_info, "session_info"))
+  session_info %>%
     .[["packages"]] %>%
     filter(attached == TRUE,
            (!grepl("local", source) | package == "base")) %>%
     select(package, loadedversion, source)
 }
-
