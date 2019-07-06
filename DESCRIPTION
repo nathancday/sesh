@@ -20,9 +20,9 @@ Imports:
     rstudioapi,
     withr
 Suggests:
-    testthat,
+    covr,
     knitr,
     rmarkdown,
-    covr
+    testthat
 RoxygenNote: 6.1.1
 VignetteBuilder: knitr
