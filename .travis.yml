@@ -2,11 +2,8 @@
 
 
 language: R
-sudo: false
-cache: packages
 
 matrix:
   include:
   - r: release
     after_success: Rscript -e 'covr::codecov()'
-  - r: devel
