@@ -26,6 +26,7 @@ save_sesh <- function(path = 'sesh_{as.character(Sys.Date())}.csv') {
 #'
 #' @param path Valid path to a sesh saved CSV.
 #' @importFrom magrittr "%>%"
+#' @importFrom utils read.csv
 #' @export
 read_sesh <- function(path) {
     read.csv(path, colClasses = "character", stringsAsFactors = FALSE)
@@ -266,6 +267,7 @@ unload_sesh <- function(path) {
 
 #' from: https://stackoverflow.com/questions/26083625/how-do-you-include-data-frame-output-inside-warnings-and-errors
 #' @param x expression to print
+#' @importFrom utils capture.output
 .print_capture <- function(x) {
     paste(capture.output(print(x)), collapse = "\n")
 }
@@ -286,6 +288,7 @@ unload_sesh <- function(path) {
 #' @param package name of package
 #' @param version version of the package
 #' @importFrom dplyr filter select slice
+#' @importFrom utils installed.packages
 .check_installed <- function(package, version) {
     ip <- as.data.frame(installed.packages())
 
@@ -294,11 +297,10 @@ unload_sesh <- function(path) {
             filter(Package == package,
                           Version == version) %>%
             slice(1)
-    }
-
-    if (nrow(installed_already) == 1) return( as.character(installed_already$LibPath) )
-
-    else return(NA_character_)
+    } else installed_already <- data.frame()
+    if (nrow(installed_already) == 1){
+      return( as.character(installed_already$LibPath) )
+    } else return(NA_character_)
 }
 
 #' Extract a data frame of attached packages
