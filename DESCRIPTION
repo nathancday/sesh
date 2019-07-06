@@ -24,7 +24,5 @@ Suggests:
     knitr,
     rmarkdown,
     testthat
-Remotes:
-    r-lib/covr
 RoxygenNote: 6.1.1
 VignetteBuilder: knitr
