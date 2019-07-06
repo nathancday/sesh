@@ -287,7 +287,7 @@ unload_sesh <- function(path) {
 #'
 #' @param package name of package
 #' @param version version of the package
-#' @importFrom dplyr filter select
+#' @importFrom dplyr filter select slice
 .check_installed <- function(package, version) {
     ip <- as.data.frame(installed.packages())
 

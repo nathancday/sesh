@@ -1,7 +1,7 @@
 Package: sesh
 Type: Package
 Title: sesh
-Version: 0.0.1
+Version: 0.0.2
 Author: Nathan Day
 Maintainer: Nathan Day <nathancday@gmail.com>
 Description: A light weight CSV-based tool to record, load and install specific 
