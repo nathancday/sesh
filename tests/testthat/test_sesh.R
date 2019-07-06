@@ -13,7 +13,6 @@ test_that("reading fails", {
 })
 
 test_that("checking works", {
-    expect_message(check_sesh("old.csv"), "installed")
     expect_message(check_sesh("old.csv"), "missing")
 })
 
@@ -26,9 +25,9 @@ test_that("checking fails", {
     expect_message(check_sesh("bad.csv"), "missing")
 })
 
-# library(tidyr)
+# library(dplyr)
 # save_sesh("end.csv")
-# detach("package:tidyr", force = TRUE)
+# detach("package:dplyr", force = TRUE)
 end <- read_sesh("end.csv")
 
 test_that("loading works", {

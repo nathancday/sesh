@@ -1,4 +1,4 @@
 "package","loadedversion","source"
-"sesh","0.0.1","Github (nathancday/sesh@f353952)"
+"dplyr","0.8.3","CRAN (R 3.5.2)"
+"sesh","0.0.2","Github (nathancday/sesh@f353952)"
 "testthat","2.0.1","CRAN (R 3.5.0)"
-"tidyr","0.8.3","CRAN (R 3.5.2)"
