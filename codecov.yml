@@ -1,4 +1,6 @@
 comment: false
+codecov:
+  token: a1c53d1f-266f-47bc-bb23-3b3d67c57b2d
 
 coverage:
   status:
