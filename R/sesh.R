@@ -15,8 +15,6 @@ sesh <- function() {
 #' @importFrom magrittr "%>%"
 #' @importFrom glue glue
 #' @importFrom utils write.csv
-#' @examples
-#' save_sesh()
 #' @export
 save_sesh <- function(path = 'sesh_{as.character(Sys.Date())}.csv') {
     file_name <- glue(path)

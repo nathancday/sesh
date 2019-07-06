@@ -15,6 +15,3 @@ Writes a CSV file with essential package information.
 \description{
 Save `sesh` as csv.
 }
-\examples{
-save_sesh()
-}
