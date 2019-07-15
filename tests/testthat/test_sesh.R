@@ -1,6 +1,8 @@
 context("sesh")
 
 start <- save_sesh("start.csv")
+si <- devtools::session_info()
+saveRDS(si, "si.RDS")
 
 test_that("saving works",{
     expect_message(save_sesh("start.csv"), "Saved")
@@ -14,6 +16,12 @@ test_that("reading fails", {
 
 test_that("checking works", {
     expect_message(check_sesh("old.csv"), "missing")
+})
+
+test_that("converting works", {
+    convert_session_info("si.RDS")
+    expect_true(file.exists("si.csv"))
+    expect_is(read_sesh("si.csv"), "data.frame")
 })
 
 # build an impossible version number by hand
@@ -46,6 +54,9 @@ test_that("install works", {
     install_sesh("test.csv")
 })
 
+rm(si)
+file.remove("si.RDS")
+file.remove("si.csv")
 # clean up / remove created files
 # file.remove("old.csv")
 # file.remove("start.csv")

@@ -18,8 +18,7 @@ sesh <- function() {
 #' @export
 save_sesh <- function(path = 'sesh_{as.character(Sys.Date())}.csv') {
     file_name <- glue(path)
-    sesh() %>%
-      write.csv(path, row.names = FALSE)
+    write.csv(sesh(), path, row.names = FALSE)
     message(glue('Saved sesh as: {file_name}'))
 }
 #' Read a saved CSV to see critical package info.
@@ -30,7 +29,21 @@ save_sesh <- function(path = 'sesh_{as.character(Sys.Date())}.csv') {
 #' @export
 read_sesh <- function(path) {
     read.csv(path, colClasses = "character", stringsAsFactors = FALSE)
-    # want ability to read output from 'session_info()``
+}
+#' Convert a saved RDS with results of `devtools::session_info()` to a
+#' sesh CSV.
+#'
+#' Opens up access to using other functions for loading critical packages.
+#'
+#' @param path Valid path to a `devtools::session_info()` output
+#' saved as RDS.
+#' @importFrom magrittr "%>%"
+#' @importFrom utils write.csv
+#' @export
+convert_session_info <- function(path) {
+  new_path <- gsub("RDS$", "csv", path)
+  s <- .extract_sesh(readRDS(path))
+  write.csv(s, new_path)
 }
 
 #' Check current conditions against a sesh.
